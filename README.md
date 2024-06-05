@@ -13,11 +13,16 @@ Server Files
 
 In order to run the server follow the instructions below;
 1. Download the server and client files
-2. Download the following server files (use npm install on the server directory):
+2. Download the following server files (use "npm install module-name" on the server directory):
+
+!!! Note you need to have installed Node.js in order to run the server and install the needed modules !!!
+
+!!! In order to get to the directory of the server files using "cd" (example command: "cd server") !!!
+
   - Express
   - Axios
   - Websocket (ws)
-!!! Note you need to have installed Node.js in order to run the server and install the needed modules !!!
+
 3. In order to run the server follow the following instructions
   a. Open up your terminal (could be CMD or Visual Studio code terminal)
   b. Get to the directory of the server files using "cd" (example command: "cd server")

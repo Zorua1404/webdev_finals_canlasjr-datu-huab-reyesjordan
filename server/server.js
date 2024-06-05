@@ -89,14 +89,13 @@ wss.on('connection', (ws) => {
 async function fetchQuestion(mode) {
     if (mode === 'Anime Guessing') {
         try {
-            const response = await axios.get('https://api.jikan.moe/v4/random/anime');
-            const anime = response.data.data;
-            console.log(anime)
-            if (anime.synopsis = "null"){
-                await fetchQuestion("Anime Guessing");
+            let anime = null;
+            while (!anime || !anime.synopsis) {
+                const response = await axios.get('https://api.jikan.moe/v4/random/anime');
+                anime = response.data.data;
             }
             const question = `Guess the anime: ${anime.synopsis}`;
-            const answer = anime.title_english.toLowerCase();
+            const answer = anime.title_english ? anime.title_english.toLowerCase() : anime.title.toLowerCase();
             broadcast({ type: 'question', question, answer });
         } catch (error) {
             console.error('Error fetching anime data:', error);

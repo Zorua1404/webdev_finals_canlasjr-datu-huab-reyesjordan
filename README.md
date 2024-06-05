@@ -2,10 +2,12 @@
 BSCpE2B - FINALS WebDev Repository Members: Canlas, John Ryan S. - Datu, Argel Paolo - Huab, Mannuel Adrian - Reyes, Jordan Jr.
 
 Included in the files are the following:
+
 Client Files
   - Index.html
   - Accompanying CSS files
   - Accompanying javascript files
+
 Server Files
   - Server javascript file
 

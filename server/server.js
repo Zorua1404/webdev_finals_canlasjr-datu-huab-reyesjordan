@@ -9,6 +9,7 @@ const PORT = 8080;
 let host = null;
 let turn = 1;
 let players = {};
+let playerSockets = {};
 
 wss.on('connection', (ws) => {
     ws.on('message', async (message) => {
@@ -20,15 +21,12 @@ wss.on('connection', (ws) => {
                 ws.send(JSON.stringify({ type: 'host' }));
             }
             players[data.username] = 0;
-            updateScores()
+            playerSockets[ws] = data.username;
+            updateScores();
         } else if (data.type === 'gameMode') {
-            wss.clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify({ type: 'gameMode', mode: data.mode }));
-                }
-            });
+            broadcast({ type: 'gameMode', mode: data.mode });
         } else if (data.type === 'startGame') {
-            await startGame(data.mode);
+            await fetchQuestion(data.mode);
         } else if (data.type === 'submitAnswer') {
             const correct = data.answer === data.correctAnswer;
             console.log(correct);
@@ -51,8 +49,8 @@ wss.on('connection', (ws) => {
                 updateScores();
                 players[data.username] += 1;
                 updateScores();
-                await startGame(data.mode);
-                console.log(players)
+                await fetchQuestion(data.mode);
+                console.log(players);
             }
             
             ws.send(JSON.stringify({ type: 'result', result: correct ? 'Correct!' : 'Wrong, try again!' }));
@@ -60,30 +58,32 @@ wss.on('connection', (ws) => {
     });
 
     ws.on('close', () => {
-        if (ws === host) {
-            host = null;
+        const username = playerSockets[ws];
+        if (username) {
+            delete players[username];
+            delete playerSockets[ws];
+            updateScores();
+            if (ws === host) {
+                assignNewHost();
+            }
         }
     });
 });
 
-async function startGame(mode) {
+async function fetchQuestion(mode) {
     if (mode === 'Anime Guessing') {
         try {
             const response = await axios.get('https://api.jikan.moe/v4/random/anime');
             const anime = response.data.data;
             console.log(anime)
-                const question = `Guess the anime: ${anime.synopsis}`;
-                const answer = anime.title_english.toLowerCase();
-                wss.clients.forEach(client => {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(JSON.stringify({ type: 'question', question, answer }));
-                    }
-                });
+            const question = `Guess the anime: ${anime.synopsis}`;
+            const answer = anime.title_english.toLowerCase();
+            broadcast({ type: 'question', question, answer });
         } catch (error) {
-            if (error = 'Cannot read properties of null'){
-                startGame("Anime Guessing")
-            }
             console.error('Error fetching anime data:', error);
+            if (error.message.includes('Cannot read properties of null')) {
+                await fetchQuestion("Anime Guessing");
+            }
         }
     } else if (mode === 'Pokemon Guessing') {
         try {
@@ -95,11 +95,7 @@ async function startGame(mode) {
                 if (flavorTextEntry) {
                     const question = `Guess the Pokemon: ${flavorTextEntry.flavor_text}`;
                     const answer = pokemon.name.toLowerCase();
-                    wss.clients.forEach(client => {
-                        if (client.readyState === WebSocket.OPEN) {
-                            client.send(JSON.stringify({ type: 'question', question, answer }));
-                        }
-                    });
+                    broadcast({ type: 'question', question, answer });
                 } else {
                     console.error('No English flavor text entry found');
                 }
@@ -112,20 +108,33 @@ async function startGame(mode) {
     }
 }
 
-function updateScores() {
+function broadcast(message) {
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'scoreUpdate', players }));
+            client.send(JSON.stringify(message));
         }
     });
 }
 
+function updateScores() {
+    broadcast({ type: 'scoreUpdate', players });
+}
+
 function resetGame() {
     players = {};
-    currentQuestion = null;
-    currentAnswer = null;
-    updateScores();
+    playerSockets = {};
     turn = 1;
+    updateScores();
+}
+
+function assignNewHost() {
+    const remainingClients = Array.from(wss.clients).filter(client => client.readyState === WebSocket.OPEN);
+    if (remainingClients.length > 0) {
+        host = remainingClients[0];
+        host.send(JSON.stringify({ type: 'host' }));
+    } else {
+        host = null;
+    }
 }
 
 server.listen(PORT, () => {

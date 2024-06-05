@@ -76,6 +76,9 @@ async function fetchQuestion(mode) {
             const response = await axios.get('https://api.jikan.moe/v4/random/anime');
             const anime = response.data.data;
             console.log(anime)
+            if (anime.synopsis = "null"){
+                await fetchQuestion("Anime Guessing");
+            }
             const question = `Guess the anime: ${anime.synopsis}`;
             const answer = anime.title_english.toLowerCase();
             broadcast({ type: 'question', question, answer });

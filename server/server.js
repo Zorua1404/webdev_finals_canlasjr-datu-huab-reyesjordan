@@ -16,6 +16,19 @@ wss.on('connection', (ws) => {
         const data = JSON.parse(message);
 
         if (data.type === 'join') {
+            currentUser = data.username;
+
+            Object.keys(playerSockets).forEach(socket => {
+                if (playerSockets[socket] === data.username) {
+                    delete playerSockets[socket];
+                    delete players[data.username];
+                }
+            });
+
+            if (host === null) {
+                host = ws;
+                ws.send(JSON.stringify({ type: 'host' }));
+            }
             if (host === null) {
                 host = ws;
                 ws.send(JSON.stringify({ type: 'host' }));
@@ -23,6 +36,7 @@ wss.on('connection', (ws) => {
             players[data.username] = 0;
             playerSockets[ws] = data.username;
             updateScores();
+            broadcast({ type: 'gameMode', mode: 'Pokemon Guessing' });
         } else if (data.type === 'gameMode') {
             broadcast({ type: 'gameMode', mode: data.mode });
         } else if (data.type === 'startGame') {
@@ -49,11 +63,13 @@ wss.on('connection', (ws) => {
                 updateScores();
                 players[data.username] += 1;
                 updateScores();
+                ws.send(JSON.stringify({ type: 'result', result: correct ? 'Correct!' : 'Wrong, try again!', iscorrect : correct , username: data.username}));
                 await fetchQuestion(data.mode);
                 console.log(players);
+                return;
             }
+            ws.send(JSON.stringify({ type: 'result', result: correct ? 'Correct!' : 'Wrong, try again!', iscorrect : correct , username: data.username}));
             
-            ws.send(JSON.stringify({ type: 'result', result: correct ? 'Correct!' : 'Wrong, try again!' }));
         }
     });
 
@@ -96,7 +112,7 @@ async function fetchQuestion(mode) {
             if (pokemon && pokemon.flavor_text_entries) {
                 const flavorTextEntry = pokemon.flavor_text_entries.find(entry => entry.language.name === 'en');
                 if (flavorTextEntry) {
-                    const question = `Guess the Pokemon: ${flavorTextEntry.flavor_text}`;
+                    const question = `Who's that Pokemon: ${flavorTextEntry.flavor_text}`;
                     const answer = pokemon.name.toLowerCase();
                     broadcast({ type: 'question', question, answer });
                 } else {

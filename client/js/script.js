@@ -45,15 +45,17 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (message.type === 'gameMode') {
             gameMode = message.mode;
             gameModeDisplay.textContent = `Current Mode: ${gameMode}`;
-        } else if (message.type === 'startGame') {
-            await fetchQuestion();
         } else if (message.type === 'question') {
             gameLobby.classList.add('d-none');
             gameScreen.classList.remove('d-none');
             gameQuestion.textContent = message.question;
             correctAnswer = message.answer;
         } else if (message.type === 'result') {
-            alert(`${message.result}, Correct answer is ${correctAnswer}`);
+            if (message.iscorrect){
+                alert(`${message.username} got it right!, Correct answer is ${correctAnswer}`);
+            } else {
+                alert(`${message.username} answered incorrectly! The game is still on!`);
+            }
         } else if (message.type === 'gameDone') {
             alert(`Game done. The winner is ${message.winner}`);
             backToTitle();
@@ -130,24 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detailsScreen.classList.add('d-none');
         howToScreen.classList.add('d-none');
         gameLobby.classList.add('d-none');
-        gameScreen.classList.add('d-none')
-    }
-
-    async function fetchQuestion() {
-        if (gameMode === 'Anime Guessing') {
-            const response = await axios.get('https://api.consumet.org/meta/anilist/random-anime');
-            const anime = response.data;
-            const question = `Guess the anime: ${anime.description}`;
-            const answer = anime.title.romaji.toLowerCase();
-            socket.send(JSON.stringify({ type: 'question', question, answer }));
-        } else if (gameMode === 'Pokemon Guessing') {
-            const randomId = Math.floor(Math.random() * 898) + 1;
-            const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${randomId}`);
-            const pokemon = response.data;
-            const question = `Guess the Pokemon: ${pokemon.flavor_text_entries.find(entry => entry.language.name === 'en').flavor_text}`;
-            const answer = pokemon.name.toLowerCase();
-            socket.send(JSON.stringify({ type: 'question', question, answer }));
-        }
+        gameScreen.classList.add('d-none');
     }
 
     function updateScoreboard() {

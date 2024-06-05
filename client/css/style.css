@@ -1,9 +1,43 @@
 body {
-    background-color: #f8f9fa;
+    background-color: #9fbcd5a4;
 }
 
 .container {
-    margin-top: 50px;
+    display: flex;
+    position: fixed;
+    background-color: #e5e3ff;
+    padding: 25px;
+    border-radius: 3%;
+    flex-direction: column;
+    justify-content: center;
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    height: auto;
+    width: auto;
+}
+
+h1{
+    font-weight: bolder; font-size: 105px;
+    color: blue;
+}
+
+h2{
+    font-weight: bold; font-size: 50px;
+    color: blue;
+}
+
+button{
+    font-weight: bold;
+    margin: 8px;
+    background: yellow;
+}
+
+p{
+    font-size: 18px;
+}
+
+#curr-player-lobby{
+    font-weight: bold;
+    font-size: 25px;
 }
 
 .d-none {

@@ -1,0 +1,51 @@
+body {
+    background-color: rgb(11, 91, 97);
+}
+
+.container {
+    display: flex;
+    position: fixed;
+    background-color: gray;
+    padding: 25px;
+    border-radius: 3%;
+    flex-direction: column;
+    justify-content: center;
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    height: auto;
+    width: auto;
+    box-shadow: 5px 8px 16px 5px rgba(0,0,0,0.2);
+}
+
+h1{
+    font-weight: bolder; font-size: 105px;
+    color: rgb(238, 238, 4);
+}
+
+h2{
+    font-weight: bold; font-size: 50px;
+    color: blue;
+}
+
+button{
+    font-weight: bold;
+    margin: 8px;
+    background: yellow;
+}
+
+p{
+    font-size: 18px;
+    color: white;
+}
+
+#curr-player-lobby{
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.d-none {
+    display: none;
+}
+
+.text-center {
+    text-align: center;
+}
